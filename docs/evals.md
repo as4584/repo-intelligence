@@ -73,3 +73,13 @@ No ranking feature should be added without a task case here or a failure case di
 2. Compare top 10 output against expected files.
 3. Record misses and why they happened.
 4. Only add heuristics that address an observed miss.
+
+## Recording runs
+
+Use the benchmark command when you want a saved artifact instead of terminal-only output:
+
+```bash
+uv run change-radar benchmark-working-set . --cases docs/eval_cases.example.json
+```
+
+This writes JSON and Markdown reports under `.change-radar/benchmarks/` by default.

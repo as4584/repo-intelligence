@@ -30,6 +30,7 @@ The codebase is in the first implementation phase:
 - bounded transitive impact analysis for symbol and diff preflight
 - CLI and MCP warnings when index-backed commands are missing fresh repo state
 - common JS/TS test-layout heuristics for diff preflight suggestions
+- benchmark artifact generation for repeatable working-set eval runs
 
 The current structural extractor uses conservative regex heuristics so the core workflows
 can progress without blocking on parser dependencies. Tree-sitter-backed parsing,
@@ -47,6 +48,7 @@ uv run change-radar build-working-set . --task "add retry logic to payment flow"
 uv run change-radar build-prompt-pack . --task "add retry logic to payment flow"
 uv run change-radar analyze-diff .
 uv run change-radar evaluate-working-set . --cases docs/eval_cases.example.json
+uv run change-radar benchmark-working-set . --cases docs/eval_cases.example.json
 uv run change-radar mcp-server
 uv run pytest
 ```

@@ -14,7 +14,10 @@ from change_radar.evals.working_set import evaluate_working_set
 from change_radar.index.service import index_repository
 from change_radar.mcp_server import run_mcp_server
 from change_radar.ranking.task import build_working_set
-from change_radar.reports.evals import format_working_set_eval
+from change_radar.reports.evals import (
+    format_working_set_eval,
+    write_working_set_eval_artifacts,
+)
 from change_radar.reports.markdown import (
     format_diff_insights,
     format_prompt_pack,
@@ -152,6 +155,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print evaluation results as JSON",
     )
 
+    benchmark_parser = subparsers.add_parser(
+        "benchmark-working-set",
+        help="Run working-set evals and write benchmark artifacts to disk",
+    )
+    benchmark_parser.add_argument("repo", help="Path to the repository root")
+    benchmark_parser.add_argument(
+        "--cases",
+        required=True,
+        help="Path to a JSON file describing evaluation cases",
+    )
+    benchmark_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum ranked files to evaluate per case",
+    )
+    benchmark_parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Directory for benchmark artifacts (defaults to .change-radar/benchmarks)",
+    )
+
     subparsers.add_parser(
         "mcp-server",
         help="Run the Change Radar MCP server over stdio",
@@ -203,6 +228,15 @@ def main() -> None:
     if args.command == "evaluate-working-set":
         _run_evaluate_working_set(
             Path(args.repo), cases=Path(args.cases), limit=args.limit, as_json=args.json
+        )
+        return
+
+    if args.command == "benchmark-working-set":
+        _run_benchmark_working_set(
+            Path(args.repo),
+            cases=Path(args.cases),
+            limit=args.limit,
+            output_dir=Path(args.output_dir) if args.output_dir else None,
         )
         return
 
@@ -319,6 +353,25 @@ def _run_evaluate_working_set(
         _print_json({"case_file": str(cases), "results": results})
         return
     print(format_working_set_eval(results))
+
+
+def _run_benchmark_working_set(
+    repo_root: Path, *, cases: Path, limit: int, output_dir: Path | None
+) -> None:
+    results = evaluate_working_set(repo_root, cases, limit=limit)
+    artifact_dir = output_dir or (repo_root / ".change-radar" / "benchmarks")
+    json_path, markdown_path, summary = write_working_set_eval_artifacts(
+        artifact_dir,
+        repo_root=repo_root,
+        case_file=cases,
+        results=results,
+    )
+    print("Recorded working-set benchmark")
+    print(f"Cases: {summary['case_count']}")
+    print(f"Average Recall@5: {summary['average_recall_at_5']:.2f}")
+    print(f"Average Recall@10: {summary['average_recall_at_10']:.2f}")
+    print(f"JSON: {json_path}")
+    print(f"Markdown: {markdown_path}")
 
 
 def _print_json(payload: object) -> None:

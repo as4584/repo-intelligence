@@ -83,3 +83,18 @@ uv run change-radar benchmark-working-set . --cases docs/eval_cases.example.json
 ```
 
 This writes JSON and Markdown reports under `.change-radar/benchmarks/` by default.
+
+## Recorded run: Change Radar self-benchmark
+
+- Date: `2026-04-13`
+- Public repo: `https://github.com/as4584/repo-intelligence`
+- Case file: [eval_cases.change_radar.json](/root/studio/testing/repo-intelligence/docs/eval_cases.change_radar.json)
+- Artifact JSON: [working-set-benchmark-20260413T093712Z.json](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T093712Z.json)
+- Artifact Markdown: [working-set-benchmark-20260413T093712Z.md](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T093712Z.md)
+- Average `Recall@5`: `0.93`
+- Average `Recall@10`: `1.00`
+
+Observed miss pattern:
+
+- `python parser support` only hit `Recall@5 = 0.67` because `src/change_radar/types.py` and `src/change_radar/index/service.py` outranked `src/change_radar/parsers/service.py`.
+- The next ranking pass should improve parser-module and dispatcher weighting before adding more parser complexity.

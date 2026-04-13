@@ -1,0 +1,48 @@
+{
+  "cases": [
+    {
+      "name": "Repo status stale-index flow",
+      "task": "repo status stale index detection",
+      "expected_files": [
+        "src/change_radar/analysis/status.py",
+        "src/change_radar/cli.py",
+        "tests/unit/test_repo_status.py"
+      ]
+    },
+    {
+      "name": "MCP repo-status tool",
+      "task": "mcp server repo status tool",
+      "expected_files": [
+        "src/change_radar/mcp_server.py",
+        "tests/unit/test_mcp_server.py"
+      ]
+    },
+    {
+      "name": "Diff preflight test suggestions",
+      "task": "diff preflight test suggestions",
+      "expected_files": [
+        "src/change_radar/analysis/diff.py",
+        "tests/integration/test_diff_analysis.py",
+        "tests/unit/test_preflight.py"
+      ]
+    },
+    {
+      "name": "Benchmark artifact generation",
+      "task": "benchmark artifact eval generation",
+      "expected_files": [
+        "src/change_radar/reports/evals.py",
+        "src/change_radar/cli.py",
+        "tests/integration/test_benchmark_working_set.py"
+      ]
+    },
+    {
+      "name": "Python parser support",
+      "task": "python parser support",
+      "expected_files": [
+        "src/change_radar/parsers/python.py",
+        "src/change_radar/parsers/service.py",
+        "tests/unit/test_python_parser.py"
+      ]
+    }
+  ]
+}

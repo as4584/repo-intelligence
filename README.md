@@ -49,6 +49,7 @@ uv run change-radar build-prompt-pack . --task "add retry logic to payment flow"
 uv run change-radar analyze-diff .
 uv run change-radar evaluate-working-set . --cases docs/eval_cases.example.json
 uv run change-radar benchmark-working-set . --cases docs/eval_cases.example.json
+uv run change-radar benchmark-working-set . --cases docs/eval_cases.change_radar.json
 uv run change-radar mcp-server
 uv run pytest
 ```

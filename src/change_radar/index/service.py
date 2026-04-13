@@ -6,7 +6,7 @@ from pathlib import Path
 
 from change_radar.config import default_db_path
 from change_radar.git.history import collect_recent_commit_counts
-from change_radar.parsers.js_ts import extract_symbols_and_edges
+from change_radar.parsers.service import extract_symbols_and_edges
 from change_radar.scanner.repo import discover_source_files
 from change_radar.storage.sqlite import (
     connect,

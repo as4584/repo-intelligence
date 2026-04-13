@@ -19,10 +19,10 @@ This repository currently contains:
 
 The codebase is in the first implementation phase:
 
-- JS/TS repo scanning
+- JS/TS and Python repo scanning
 - `.gitignore`-aware file discovery
 - SQLite index initialization
-- lightweight JS/TS structural extraction for imports and top-level symbols
+- lightweight JS/TS and Python structural extraction for imports and top-level symbols
 - recent Git hotness signals for ranking
 - CLI commands for `scan`, `index`, `build-working-set`, `build-prompt-pack`, `analyze-symbol`, and `analyze-diff`
 - MCP server wrapper for editor and agent integration

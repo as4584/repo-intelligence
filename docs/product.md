@@ -55,7 +55,7 @@ The strongest recurring insight from the research docs is that current AI tools 
 ### Must have
 
 - local-first CLI
-- JS/TS repo support
+- JS/TS and Python repo support
 - `.gitignore`-aware repo scanning
 - deterministic import and symbol extraction with a swappable parser backend
 - SQLite index

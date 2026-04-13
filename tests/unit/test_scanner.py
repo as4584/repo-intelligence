@@ -41,3 +41,15 @@ def test_discover_source_files_falls_back_without_git(tmp_path: Path) -> None:
     files = discover_source_files(repo)
 
     assert [item.relative_path for item in files] == ["src/index.ts"]
+
+
+def test_discover_source_files_includes_python_modules(tmp_path: Path) -> None:
+    repo = tmp_path / "plain"
+    repo.mkdir()
+
+    (repo / "src").mkdir()
+    (repo / "src" / "app.py").write_text("def main():\n    return True\n", encoding="utf-8")
+
+    files = discover_source_files(repo)
+
+    assert [item.relative_path for item in files] == ["src/app.py"]

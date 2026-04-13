@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 SUPPORTED_SOURCE_SUFFIXES = {
+    ".py",
     ".js",
     ".jsx",
     ".ts",

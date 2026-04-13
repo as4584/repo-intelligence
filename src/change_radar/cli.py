@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, is_dataclass
 import json
 from pathlib import Path
 
@@ -11,6 +10,7 @@ from change_radar.analysis.diff import analyze_diff
 from change_radar.analysis.symbol import analyze_symbol
 from change_radar.evals.working_set import evaluate_working_set
 from change_radar.index.service import index_repository
+from change_radar.mcp_server import run_mcp_server
 from change_radar.ranking.task import build_working_set
 from change_radar.reports.evals import format_working_set_eval
 from change_radar.reports.markdown import (
@@ -20,6 +20,7 @@ from change_radar.reports.markdown import (
     format_working_set,
 )
 from change_radar.scanner.repo import discover_source_files
+from change_radar.serialization import to_jsonable
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -125,6 +126,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print evaluation results as JSON",
     )
 
+    subparsers.add_parser(
+        "mcp-server",
+        help="Run the Change Radar MCP server over stdio",
+    )
+
     return parser
 
 
@@ -164,6 +170,10 @@ def main() -> None:
         _run_evaluate_working_set(
             Path(args.repo), cases=Path(args.cases), limit=args.limit, as_json=args.json
         )
+        return
+
+    if args.command == "mcp-server":
+        run_mcp_server()
         return
 
     parser.error(f"Unknown command: {args.command}")
@@ -252,17 +262,7 @@ def _run_evaluate_working_set(
 
 
 def _print_json(payload: object) -> None:
-    print(json.dumps(_to_jsonable(payload), indent=2))
-
-
-def _to_jsonable(value: object) -> object:
-    if is_dataclass(value):
-        return {key: _to_jsonable(item) for key, item in asdict(value).items()}
-    if isinstance(value, dict):
-        return {str(key): _to_jsonable(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_to_jsonable(item) for item in value]
-    return value
+    print(json.dumps(to_jsonable(payload), indent=2))
 
 
 if __name__ == "__main__":

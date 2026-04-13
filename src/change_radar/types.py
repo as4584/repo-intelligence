@@ -73,3 +73,4 @@ class DiffFileInsight:
     dependents: tuple[str, ...]
     dependencies: tuple[str, ...]
     suggested_tests: tuple[str, ...]
+

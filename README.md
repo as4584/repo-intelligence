@@ -25,6 +25,7 @@ The codebase is in the first implementation phase:
 - lightweight JS/TS structural extraction for imports and top-level symbols
 - recent Git hotness signals for ranking
 - CLI commands for `scan`, `index`, `build-working-set`, `build-prompt-pack`, `analyze-symbol`, and `analyze-diff`
+- MCP server wrapper for editor and agent integration
 
 The current structural extractor uses conservative regex heuristics so the core workflows
 can progress without blocking on parser dependencies. Tree-sitter-backed parsing,
@@ -41,8 +42,13 @@ uv run change-radar build-working-set . --task "add retry logic to payment flow"
 uv run change-radar build-prompt-pack . --task "add retry logic to payment flow"
 uv run change-radar analyze-diff .
 uv run change-radar evaluate-working-set . --cases docs/eval_cases.example.json
+uv run change-radar mcp-server
 uv run pytest
 ```
+
+## MCP usage
+
+An example MCP config is available at [examples/mcp.json.example](/root/studio/testing/repo-intelligence/examples/mcp.json.example).
 
 ## Source of truth
 

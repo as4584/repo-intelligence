@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "change-radar": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "change-radar",
+        "mcp-server"
+      ]
+    }
+  }
+}

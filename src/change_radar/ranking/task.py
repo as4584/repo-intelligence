@@ -72,29 +72,36 @@ def _build_from_index(repo_root: Path, db_path: Path, tokens: list[str], limit: 
     boosted: dict[str, tuple[float, list[str]]] = {}
     for relative_path in file_paths:
         score, reasons = base_scores.get(relative_path, (0.0, []))
+        has_lexical_match = relative_path in base_scores
 
         imported_seeds = [
             target for target in forward_imports.get(relative_path, []) if target in seed_paths
         ]
         if imported_seeds:
-            score += 1.5 * len(imported_seeds)
+            edge_weight = 1.5 if has_lexical_match else 0.5
+            score += edge_weight * len(imported_seeds)
             reasons.append("imports matched file")
 
         reverse_seed_neighbors = [
             source for source in reverse_imports.get(relative_path, []) if source in seed_paths
         ]
         if reverse_seed_neighbors:
-            score += 2.0 * len(reverse_seed_neighbors)
+            edge_weight = 2.0 if has_lexical_match else 0.75
+            score += edge_weight * len(reverse_seed_neighbors)
             reasons.append("imported by matched file")
 
         degree = len(reverse_imports.get(relative_path, []))
         if degree > 0:
-            score += min(1.0, 0.2 * degree)
+            degree_cap = 1.0 if has_lexical_match else 0.5
+            degree_step = 0.2 if has_lexical_match else 0.1
+            score += min(degree_cap, degree_step * degree)
             reasons.append("connected import hub")
 
         recent_commit_count = git_stats.get(relative_path, 0)
         if recent_commit_count > 0:
-            score += min(1.5, 0.25 * recent_commit_count)
+            hotness_cap = 1.5 if has_lexical_match else 0.5
+            hotness_step = 0.25 if has_lexical_match else 0.1
+            score += min(hotness_cap, hotness_step * recent_commit_count)
             reasons.append(f"recently changed {recent_commit_count} commit(s)")
 
         if score <= 0:

@@ -89,12 +89,13 @@ This writes JSON and Markdown reports under `.change-radar/benchmarks/` by defau
 - Date: `2026-04-13`
 - Public repo: `https://github.com/as4584/repo-intelligence`
 - Case file: [eval_cases.change_radar.json](/root/studio/testing/repo-intelligence/docs/eval_cases.change_radar.json)
-- Artifact JSON: [working-set-benchmark-20260413T093712Z.json](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T093712Z.json)
-- Artifact Markdown: [working-set-benchmark-20260413T093712Z.md](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T093712Z.md)
-- Average `Recall@5`: `0.93`
+- Artifact JSON: [working-set-benchmark-20260413T094151Z.json](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T094151Z.json)
+- Artifact Markdown: [working-set-benchmark-20260413T094151Z.md](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T094151Z.md)
+- Average `Recall@5`: `1.00`
 - Average `Recall@10`: `1.00`
 
-Observed miss pattern:
+What changed between the two self-benchmark runs:
 
-- `python parser support` only hit `Recall@5 = 0.67` because `src/change_radar/types.py` and `src/change_radar/index/service.py` outranked `src/change_radar/parsers/service.py`.
-- The next ranking pass should improve parser-module and dispatcher weighting before adding more parser complexity.
+- The first run exposed a ranking miss on `python parser support`, where graph-only hub files outranked the parser dispatcher.
+- The follow-up ranking pass reduced graph and hotness boosts for files with no lexical task match.
+- The current self-benchmark now hits `Recall@5 = 1.00` and `Recall@10 = 1.00` across all five curated cases.

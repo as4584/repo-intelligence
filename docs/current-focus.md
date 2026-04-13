@@ -16,3 +16,4 @@
 - scanner, indexer, ranking, and diff tests pass
 - at least one public-repo eval run is recorded in `docs/evals.md`
 - current recorded run: `2026-04-13` self-benchmark on `repo-intelligence`
+- current self-benchmark baseline: `Recall@5 = 1.00`, `Recall@10 = 1.00`

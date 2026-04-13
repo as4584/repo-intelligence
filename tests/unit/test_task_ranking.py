@@ -105,3 +105,59 @@ def test_build_working_set_uses_git_hotness_to_break_ties(tmp_path: Path) -> Non
         "src/auth/alpha.ts",
     ]
     assert any("recently changed" in reason for reason in ranked[0].reasons)
+
+
+def test_build_working_set_prefers_lexical_parser_matches_over_generic_hubs(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+
+    (repo / "src").mkdir()
+    (repo / "src" / "core").mkdir()
+    (repo / "src" / "parsers").mkdir()
+    (repo / "src" / "index").mkdir()
+
+    (repo / "src" / "core" / "types.py").write_text(
+        "class Node:\n"
+        "    pass\n",
+        encoding="utf-8",
+    )
+    (repo / "src" / "parsers" / "python.py").write_text(
+        "from core.types import Node\n"
+        "\n"
+        "def parse_python() -> Node:\n"
+        "    return Node()\n",
+        encoding="utf-8",
+    )
+    (repo / "src" / "parsers" / "service.py").write_text(
+        "from parsers.python import parse_python\n"
+        "from core.types import Node\n"
+        "\n"
+        "def build_parser_support() -> Node:\n"
+        "    return parse_python()\n",
+        encoding="utf-8",
+    )
+    (repo / "src" / "index" / "service.py").write_text(
+        "from parsers.service import build_parser_support\n"
+        "from core.types import Node\n"
+        "\n"
+        "def build_index() -> Node:\n"
+        "    return build_parser_support()\n",
+        encoding="utf-8",
+    )
+
+    index_repository(repo)
+    ranked = build_working_set(repo, "python parser support", limit=4)
+
+    ranked_paths = [item.relative_path for item in ranked]
+
+    assert ranked_paths[:2] == [
+        "src/parsers/python.py",
+        "src/parsers/service.py",
+    ]
+    assert ranked_paths.index("src/core/types.py") > ranked_paths.index(
+        "src/parsers/service.py"
+    )

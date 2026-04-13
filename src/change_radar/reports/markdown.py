@@ -77,3 +77,48 @@ def format_diff_insights(insights: list[DiffFileInsight]) -> str:
             lines.append("  suggested tests: none")
 
     return "\n".join(lines)
+
+
+def format_prompt_pack(task_text: str, ranked_files: list[RankedFile]) -> str:
+    lines = [
+        "Prompt pack",
+        "",
+        f"Task: {task_text}",
+        "",
+    ]
+
+    if not ranked_files:
+        lines.append("No strong file recommendations yet.")
+        return "\n".join(lines)
+
+    lines.extend(
+        [
+            "Use the following files as the primary working set:",
+            "",
+        ]
+    )
+    for item in ranked_files:
+        lines.append(f"- #{item.relative_path}")
+
+    lines.extend(
+        [
+            "",
+            "Why these files:",
+            "",
+        ]
+    )
+    for item in ranked_files:
+        lines.append(f"- {item.relative_path}: {'; '.join(item.reasons)}")
+
+    lines.extend(
+        [
+            "",
+            "Editing instructions:",
+            "- Make the smallest safe change that satisfies the task.",
+            "- Stay within the working set unless another file is clearly necessary.",
+            "- If another file is needed, explain why before expanding scope.",
+            "- Update or run nearby tests for the touched area.",
+        ]
+    )
+
+    return "\n".join(lines)

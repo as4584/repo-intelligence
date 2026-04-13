@@ -12,6 +12,7 @@ from change_radar.index.service import index_repository
 from change_radar.ranking.task import build_working_set
 from change_radar.reports.markdown import (
     format_diff_insights,
+    format_prompt_pack,
     format_symbol_insights,
     format_working_set,
 )
@@ -71,6 +72,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum number of files to return",
     )
 
+    prompt_pack_parser = subparsers.add_parser(
+        "build-prompt-pack",
+        help="Generate a copy-pasteable prompt pack from the ranked working set",
+    )
+    prompt_pack_parser.add_argument("repo", help="Path to the repository root")
+    prompt_pack_parser.add_argument("--task", required=True, help="Task description")
+    prompt_pack_parser.add_argument(
+        "--limit",
+        type=int,
+        default=8,
+        help="Maximum number of files to include",
+    )
+
     return parser
 
 
@@ -96,6 +110,10 @@ def main() -> None:
 
     if args.command == "build-working-set":
         _run_build_working_set(Path(args.repo), task=args.task, limit=args.limit)
+        return
+
+    if args.command == "build-prompt-pack":
+        _run_build_prompt_pack(Path(args.repo), task=args.task, limit=args.limit)
         return
 
     parser.error(f"Unknown command: {args.command}")
@@ -147,6 +165,11 @@ def _run_analyze_symbol(repo_root: Path, *, symbol: str, limit: int) -> None:
 def _run_analyze_diff(repo_root: Path) -> None:
     insights = analyze_diff(repo_root)
     print(format_diff_insights(insights))
+
+
+def _run_build_prompt_pack(repo_root: Path, *, task: str, limit: int) -> None:
+    ranked = build_working_set(repo_root, task, limit=limit)
+    print(format_prompt_pack(task, ranked))
 
 
 if __name__ == "__main__":

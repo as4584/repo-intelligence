@@ -24,7 +24,7 @@ The codebase is in the first implementation phase:
 - SQLite index initialization
 - lightweight JS/TS structural extraction for imports and top-level symbols
 - recent Git hotness signals for ranking
-- CLI commands for `scan`, `index`, `build-working-set`, `analyze-symbol`, and `analyze-diff`
+- CLI commands for `scan`, `index`, `build-working-set`, `build-prompt-pack`, `analyze-symbol`, and `analyze-diff`
 
 The current structural extractor uses conservative regex heuristics so the core workflows
 can progress without blocking on parser dependencies. Tree-sitter-backed parsing,
@@ -38,6 +38,7 @@ uv run change-radar scan .
 uv run change-radar index .
 uv run change-radar analyze-symbol . --symbol processPayment
 uv run change-radar build-working-set . --task "add retry logic to payment flow"
+uv run change-radar build-prompt-pack . --task "add retry logic to payment flow"
 uv run change-radar analyze-diff .
 uv run pytest
 ```

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from time import perf_counter
 
 from change_radar.index.service import index_repository
 from change_radar.ranking.task import build_working_set
@@ -26,6 +27,7 @@ class WorkingSetEvalResult:
     recall_at_5: float
     recall_at_10: float
     missing_from_top_10: tuple[str, ...]
+    query_duration_ms: float
 
 
 
@@ -55,7 +57,9 @@ def evaluate_working_set(
     results: list[WorkingSetEvalResult] = []
 
     for case in cases:
+        started_at = perf_counter()
         ranked = build_working_set(repo_root, case.task, limit=limit)
+        query_duration_ms = (perf_counter() - started_at) * 1000
         predicted = tuple(item.relative_path for item in ranked[:limit])
         predicted_top_5 = predicted[:5]
         recall_at_5 = _recall(case.expected_files, predicted_top_5)
@@ -70,6 +74,7 @@ def evaluate_working_set(
                 recall_at_5=recall_at_5,
                 recall_at_10=recall_at_10,
                 missing_from_top_10=missing,
+                query_duration_ms=query_duration_ms,
             )
         )
 

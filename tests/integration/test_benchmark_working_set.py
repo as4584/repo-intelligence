@@ -90,4 +90,6 @@ def test_benchmark_working_set_writes_artifacts(tmp_path: Path) -> None:
     payload = json.loads(json_reports[0].read_text(encoding="utf-8"))
     assert payload["summary"]["case_count"] == 1
     assert payload["summary"]["average_recall_at_10"] == 1.0
+    assert payload["summary"]["average_query_duration_ms"] >= 0.0
     assert payload["results"][0]["name"] == "Payment flow"
+    assert payload["results"][0]["query_duration_ms"] >= 0.0

@@ -16,12 +16,16 @@ def summarize_working_set_eval(results: list[WorkingSetEvalResult]) -> dict[str,
             "case_count": 0,
             "average_recall_at_5": 0.0,
             "average_recall_at_10": 0.0,
+            "average_query_duration_ms": 0.0,
+            "max_query_duration_ms": 0.0,
             "perfect_recall_at_10_count": 0,
             "failing_cases": [],
         }
 
     average_recall_at_5 = sum(item.recall_at_5 for item in results) / len(results)
     average_recall_at_10 = sum(item.recall_at_10 for item in results) / len(results)
+    average_query_duration_ms = sum(item.query_duration_ms for item in results) / len(results)
+    max_query_duration_ms = max(item.query_duration_ms for item in results)
     perfect_recall_at_10_count = sum(1 for item in results if item.recall_at_10 == 1.0)
     failing_cases = [
         item.name for item in results if item.missing_from_top_10 or item.recall_at_10 < 1.0
@@ -30,6 +34,8 @@ def summarize_working_set_eval(results: list[WorkingSetEvalResult]) -> dict[str,
         "case_count": len(results),
         "average_recall_at_5": average_recall_at_5,
         "average_recall_at_10": average_recall_at_10,
+        "average_query_duration_ms": average_query_duration_ms,
+        "max_query_duration_ms": max_query_duration_ms,
         "perfect_recall_at_10_count": perfect_recall_at_10_count,
         "failing_cases": failing_cases,
     }
@@ -46,6 +52,7 @@ def format_working_set_eval(results: list[WorkingSetEvalResult]) -> str:
 
     lines.append(f"Average Recall@5:  {summary['average_recall_at_5']:.2f}")
     lines.append(f"Average Recall@10: {summary['average_recall_at_10']:.2f}")
+    lines.append(f"Average query latency: {summary['average_query_duration_ms']:.1f} ms")
     lines.append("")
 
     for item in results:
@@ -53,6 +60,7 @@ def format_working_set_eval(results: list[WorkingSetEvalResult]) -> str:
         lines.append(f"  task: {item.task}")
         lines.append(f"  recall@5: {item.recall_at_5:.2f}")
         lines.append(f"  recall@10: {item.recall_at_10:.2f}")
+        lines.append(f"  query latency: {item.query_duration_ms:.1f} ms")
         lines.append(f"  predicted: {', '.join(item.predicted_top_10) or 'none'}")
         if item.missing_from_top_10:
             lines.append(f"  missing: {', '.join(item.missing_from_top_10)}")
@@ -94,6 +102,8 @@ def write_working_set_eval_artifacts(
         f"- Cases: {summary['case_count']}",
         f"- Average Recall@5: {summary['average_recall_at_5']:.2f}",
         f"- Average Recall@10: {summary['average_recall_at_10']:.2f}",
+        f"- Average query latency: {summary['average_query_duration_ms']:.1f} ms",
+        f"- Slowest query latency: {summary['max_query_duration_ms']:.1f} ms",
         "",
         format_working_set_eval(results),
         "",

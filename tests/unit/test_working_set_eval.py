@@ -88,3 +88,4 @@ def test_evaluate_working_set_computes_recall(tmp_path: Path) -> None:
     assert results[0].recall_at_5 == 1.0
     assert results[0].recall_at_10 == 1.0
     assert results[0].missing_from_top_10 == ()
+    assert results[0].query_duration_ms >= 0.0

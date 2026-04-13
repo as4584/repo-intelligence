@@ -89,13 +89,15 @@ This writes JSON and Markdown reports under `.change-radar/benchmarks/` by defau
 - Date: `2026-04-13`
 - Public repo: `https://github.com/as4584/repo-intelligence`
 - Case file: [eval_cases.change_radar.json](/root/studio/testing/repo-intelligence/docs/eval_cases.change_radar.json)
-- Artifact JSON: [working-set-benchmark-20260413T094151Z.json](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T094151Z.json)
-- Artifact Markdown: [working-set-benchmark-20260413T094151Z.md](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T094151Z.md)
+- Artifact JSON: [working-set-benchmark-20260413T094404Z.json](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T094404Z.json)
+- Artifact Markdown: [working-set-benchmark-20260413T094404Z.md](/root/studio/testing/repo-intelligence/docs/benchmarks/working-set-benchmark-20260413T094404Z.md)
 - Average `Recall@5`: `1.00`
 - Average `Recall@10`: `1.00`
+- Average query latency: `0.7 ms`
+- Slowest query latency: `0.9 ms`
 
 What changed between the two self-benchmark runs:
 
 - The first run exposed a ranking miss on `python parser support`, where graph-only hub files outranked the parser dispatcher.
 - The follow-up ranking pass reduced graph and hotness boosts for files with no lexical task match.
-- The current self-benchmark now hits `Recall@5 = 1.00` and `Recall@10 = 1.00` across all five curated cases.
+- The current self-benchmark now hits `Recall@5 = 1.00` and `Recall@10 = 1.00` across all five curated cases while keeping average query latency under `1 ms`.

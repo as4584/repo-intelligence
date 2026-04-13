@@ -82,3 +82,63 @@ def test_analyze_diff_maps_changed_lines_to_symbols_and_bounded_impact(tmp_path:
         "src/services/payment_service.test.ts",
         "src/routes/checkout.test.ts",
     )
+
+
+def test_analyze_diff_suggests_tests_from_common_test_layouts(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+
+    (repo / "src").mkdir()
+    (repo / "src" / "services").mkdir(parents=True, exist_ok=True)
+    (repo / "src" / "services" / "payment_service.ts").write_text(
+        "export function processPayment() {\n"
+        "  return true;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    (repo / "tests").mkdir()
+    (repo / "tests" / "services").mkdir()
+    (repo / "tests" / "services" / "payment_service.test.ts").write_text(
+        'import { processPayment } from "../../src/services/payment_service";\n'
+        "test('processPayment', () => expect(processPayment()).toBe(true));\n",
+        encoding="utf-8",
+    )
+    (repo / "src" / "services" / "__tests__").mkdir()
+    (repo / "src" / "services" / "__tests__" / "payment_service.spec.ts").write_text(
+        'import { processPayment } from "../payment_service";\n'
+        "test('payment service', () => expect(processPayment()).toBe(true));\n",
+        encoding="utf-8",
+    )
+
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "initial"], cwd=repo, check=True, capture_output=True)
+
+    (repo / "src" / "services" / "payment_service.ts").write_text(
+        "export function processPayment() {\n"
+        "  const updated = true;\n"
+        "  return updated;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+    insights = analyze_diff(repo)
+
+    assert len(insights) == 1
+    assert insights[0].suggested_tests == (
+        "src/services/__tests__/payment_service.spec.ts",
+        "tests/services/payment_service.test.ts",
+    )

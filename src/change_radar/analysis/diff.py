@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from change_radar.analysis.impact import build_import_maps, find_transitive_dependents
@@ -16,6 +17,19 @@ from change_radar.storage.sqlite import (
     load_symbols_for_file,
 )
 from change_radar.types import DiffFileInsight
+
+TEST_TOKEN_RE = re.compile(r"[a-z0-9]+")
+TEST_STEM_SUFFIXES = (".test", ".spec", "_test", "_spec", "-test", "-spec")
+SOURCE_ROLE_SUFFIXES = (
+    ".service",
+    "_service",
+    ".controller",
+    "_controller",
+    ".route",
+    "_route",
+    ".handler",
+    "_handler",
+)
 
 
 def analyze_diff(
@@ -106,34 +120,45 @@ def _match_symbols(changed_lines: tuple[int, ...], symbols: list[object]) -> lis
 
 def _suggest_tests(relative_path: str, all_paths: list[str], *, limit: int) -> list[str]:
     path = Path(relative_path)
-    stem = path.stem
-    basename_candidates = {
-        f"{stem}.test",
-        f"{stem}.spec",
-        stem.replace(".service", ""),
-        stem.replace("_service", ""),
+    source_variants = _subject_variants(path.stem)
+    source_tokens = _tokenize(path.stem)
+    source_dir_tokens = {
+        token
+        for part in path.parts[:-1]
+        for token in _tokenize(part)
+        if token not in {"src", "lib", "app"}
     }
 
-    matches: list[str] = []
+    scored_matches: list[tuple[int, str]] = []
     for candidate in all_paths:
-        candidate_name = Path(candidate).name
-        candidate_stem = Path(candidate).stem
         if not _is_test_path(candidate):
             continue
-        if stem in candidate_name or candidate_stem in basename_candidates:
-            matches.append(candidate)
+        score = _score_test_candidate(
+            candidate,
+            source_variants=source_variants,
+            source_tokens=source_tokens,
+            source_dir_tokens=source_dir_tokens,
+        )
+        if score <= 0:
             continue
-        if path.parent.name and path.parent.name in candidate:
-            matches.append(candidate)
+        scored_matches.append((score, candidate))
+
+    scored_matches.sort(
+        key=lambda item: (
+            -item[0],
+            item[1].count("/"),
+            item[1],
+        )
+    )
 
     deduped: list[str] = []
-    seen: set[str] = set()
-    for match in matches:
-        if match in seen:
+    for _score, match in scored_matches:
+        if match in deduped:
             continue
-        seen.add(match)
         deduped.append(match)
-    return deduped[:limit]
+        if len(deduped) >= limit:
+            break
+    return deduped
 
 
 def _suggest_tests_for_paths(
@@ -151,4 +176,72 @@ def _suggest_tests_for_paths(
 
 
 def _is_test_path(relative_path: str) -> bool:
-    return ".test." in relative_path or ".spec." in relative_path or "/tests/" in relative_path
+    lowered = relative_path.lower()
+    return (
+        ".test." in lowered
+        or ".spec." in lowered
+        or "/tests/" in lowered
+        or "/test/" in lowered
+        or "/__tests__/" in lowered
+    )
+
+
+def _score_test_candidate(
+    relative_path: str,
+    *,
+    source_variants: set[str],
+    source_tokens: set[str],
+    source_dir_tokens: set[str],
+) -> int:
+    candidate_path = Path(relative_path)
+    candidate_variants = _subject_variants(candidate_path.stem)
+    candidate_tokens = _tokenize(candidate_path.stem)
+    candidate_dir_tokens = {
+        token
+        for part in candidate_path.parts[:-1]
+        for token in _tokenize(part)
+        if token not in {"tests", "test", "__tests__"}
+    }
+
+    score = 0
+    shared_variants = source_variants & candidate_variants
+    if shared_variants:
+        score += 8
+
+    shared_tokens = source_tokens & candidate_tokens
+    if shared_tokens:
+        score += 3 * len(shared_tokens)
+
+    shared_dir_tokens = source_dir_tokens & candidate_dir_tokens
+    if shared_dir_tokens:
+        score += 2 * len(shared_dir_tokens)
+
+    parent_name = candidate_path.parent.name.lower()
+    if parent_name in {"tests", "test", "__tests__"}:
+        score += 1
+
+    return score
+
+
+def _subject_variants(stem: str) -> set[str]:
+    variants = {stem.lower()}
+    pending = list(variants)
+    while pending:
+        current = pending.pop()
+        for suffix in (*TEST_STEM_SUFFIXES, *SOURCE_ROLE_SUFFIXES):
+            if not current.endswith(suffix):
+                continue
+            trimmed = current[: -len(suffix)]
+            if trimmed and trimmed not in variants:
+                variants.add(trimmed)
+                pending.append(trimmed)
+        if current.startswith("test_"):
+            trimmed = current[5:]
+            if trimmed and trimmed not in variants:
+                variants.add(trimmed)
+                pending.append(trimmed)
+    return variants
+
+
+def _tokenize(value: str) -> set[str]:
+    return {match.group(0) for match in TEST_TOKEN_RE.finditer(value.lower())}

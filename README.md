@@ -29,6 +29,7 @@ The codebase is in the first implementation phase:
 - repo/index status detection for stale index checks
 - bounded transitive impact analysis for symbol and diff preflight
 - CLI and MCP warnings when index-backed commands are missing fresh repo state
+- common JS/TS test-layout heuristics for diff preflight suggestions
 
 The current structural extractor uses conservative regex heuristics so the core workflows
 can progress without blocking on parser dependencies. Tree-sitter-backed parsing,

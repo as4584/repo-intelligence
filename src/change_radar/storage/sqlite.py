@@ -323,3 +323,33 @@ def load_all_file_paths(connection: sqlite3.Connection, repo_root: str) -> list[
         (repo_root,),
     ).fetchall()
     return [row["relative_path"] for row in rows]
+
+
+def load_index_file_metadata(
+    connection: sqlite3.Connection, repo_root: str
+) -> dict[str, str]:
+    rows = connection.execute(
+        """
+        SELECT relative_path, modified_at
+        FROM files
+        WHERE repo_root = ?
+        ORDER BY relative_path
+        """,
+        (repo_root,),
+    ).fetchall()
+    return {row["relative_path"]: row["modified_at"] for row in rows}
+
+
+def load_latest_index_run(
+    connection: sqlite3.Connection, repo_root: str
+) -> sqlite3.Row | None:
+    return connection.execute(
+        """
+        SELECT indexed_file_count, indexed_at
+        FROM index_runs
+        WHERE repo_root = ?
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (repo_root,),
+    ).fetchone()

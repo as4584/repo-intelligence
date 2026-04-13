@@ -74,3 +74,15 @@ class DiffFileInsight:
     dependencies: tuple[str, ...]
     suggested_tests: tuple[str, ...]
 
+
+@dataclass(slots=True, frozen=True)
+class RepoStatus:
+    repo_root: str
+    db_path: str
+    has_index: bool
+    indexed_at: str | None
+    indexed_file_count: int
+    current_file_count: int
+    git_dirty: bool
+    is_stale: bool
+    stale_reasons: tuple[str, ...]

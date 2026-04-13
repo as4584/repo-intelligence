@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from change_radar.analysis.diff import analyze_diff
+from change_radar.analysis.status import get_repo_status
 from change_radar.analysis.symbol import analyze_symbol
 from change_radar.evals.working_set import evaluate_working_set
 from change_radar.index.service import index_repository
@@ -16,6 +17,7 @@ from change_radar.reports.evals import format_working_set_eval
 from change_radar.reports.markdown import (
     format_diff_insights,
     format_prompt_pack,
+    format_repo_status,
     format_symbol_insights,
     format_working_set,
 )
@@ -43,6 +45,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     index_parser = subparsers.add_parser("index", help="Initialize the local index")
     index_parser.add_argument("repo", help="Path to the repository root")
+
+    status_parser = subparsers.add_parser(
+        "repo-status",
+        help="Report whether the local index exists and whether it looks stale",
+    )
+    status_parser.add_argument("repo", help="Path to the repository root")
+    status_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print repo status as JSON",
+    )
 
     analyze_symbol_parser = subparsers.add_parser(
         "analyze-symbol",
@@ -146,6 +159,10 @@ def main() -> None:
         _run_index(Path(args.repo))
         return
 
+    if args.command == "repo-status":
+        _run_repo_status(Path(args.repo), as_json=args.json)
+        return
+
     if args.command == "analyze-symbol":
         _run_analyze_symbol(
             Path(args.repo), symbol=args.symbol, limit=args.limit, as_json=args.json
@@ -210,6 +227,14 @@ def _run_index(repo_root: Path) -> None:
     print(f"Edges:   {summary.edge_count}")
     print(f"Repo: {summary.repo_root}")
     print(f"DB:   {summary.db_path}")
+
+
+def _run_repo_status(repo_root: Path, *, as_json: bool) -> None:
+    status = get_repo_status(repo_root)
+    if as_json:
+        _print_json(status)
+        return
+    print(format_repo_status(status))
 
 
 def _run_build_working_set(repo_root: Path, *, task: str, limit: int, as_json: bool) -> None:

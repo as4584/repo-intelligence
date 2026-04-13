@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from change_radar.types import DiffFileInsight, RankedFile, SymbolInsight
+from change_radar.types import DiffFileInsight, RankedFile, RepoStatus, SymbolInsight
 
 
 def format_working_set(task_text: str, ranked_files: list[RankedFile]) -> str:
@@ -121,4 +121,21 @@ def format_prompt_pack(task_text: str, ranked_files: list[RankedFile]) -> str:
         ]
     )
 
+    return "\n".join(lines)
+
+
+def format_repo_status(status: RepoStatus) -> str:
+    lines = ["Repo status", ""]
+    lines.append(f"Repo: {status.repo_root}")
+    lines.append(f"Index DB: {status.db_path}")
+    lines.append(f"Has index: {'yes' if status.has_index else 'no'}")
+    lines.append(f"Indexed at: {status.indexed_at or 'never'}")
+    lines.append(f"Indexed files: {status.indexed_file_count}")
+    lines.append(f"Current files: {status.current_file_count}")
+    lines.append(f"Git dirty: {'yes' if status.git_dirty else 'no'}")
+    lines.append(f"Index stale: {'yes' if status.is_stale else 'no'}")
+    if status.stale_reasons:
+        lines.append("Reasons:")
+        for reason in status.stale_reasons:
+            lines.append(f"- {reason}")
     return "\n".join(lines)

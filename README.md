@@ -26,6 +26,7 @@ The codebase is in the first implementation phase:
 - recent Git hotness signals for ranking
 - CLI commands for `scan`, `index`, `build-working-set`, `build-prompt-pack`, `analyze-symbol`, and `analyze-diff`
 - MCP server wrapper for editor and agent integration
+- repo/index status detection for stale index checks
 
 The current structural extractor uses conservative regex heuristics so the core workflows
 can progress without blocking on parser dependencies. Tree-sitter-backed parsing,
@@ -36,6 +37,7 @@ diff blast-radius analysis, and MCP tools are planned next.
 ```bash
 uv sync
 uv run change-radar scan .
+uv run change-radar repo-status .
 uv run change-radar index .
 uv run change-radar analyze-symbol . --symbol processPayment
 uv run change-radar build-working-set . --task "add retry logic to payment flow"

@@ -8,8 +8,10 @@ from pathlib import Path
 
 from change_radar.analysis.diff import analyze_diff
 from change_radar.analysis.symbol import analyze_symbol
+from change_radar.evals.working_set import evaluate_working_set
 from change_radar.index.service import index_repository
 from change_radar.ranking.task import build_working_set
+from change_radar.reports.evals import format_working_set_eval
 from change_radar.reports.markdown import (
     format_diff_insights,
     format_prompt_pack,
@@ -85,6 +87,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum number of files to include",
     )
 
+    eval_parser = subparsers.add_parser(
+        "evaluate-working-set",
+        help="Run recall metrics for working-set ranking against a case file",
+    )
+    eval_parser.add_argument("repo", help="Path to the repository root")
+    eval_parser.add_argument(
+        "--cases",
+        required=True,
+        help="Path to a JSON file describing evaluation cases",
+    )
+    eval_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum ranked files to evaluate per case",
+    )
+
     return parser
 
 
@@ -114,6 +133,10 @@ def main() -> None:
 
     if args.command == "build-prompt-pack":
         _run_build_prompt_pack(Path(args.repo), task=args.task, limit=args.limit)
+        return
+
+    if args.command == "evaluate-working-set":
+        _run_evaluate_working_set(Path(args.repo), cases=Path(args.cases), limit=args.limit)
         return
 
     parser.error(f"Unknown command: {args.command}")
@@ -170,6 +193,11 @@ def _run_analyze_diff(repo_root: Path) -> None:
 def _run_build_prompt_pack(repo_root: Path, *, task: str, limit: int) -> None:
     ranked = build_working_set(repo_root, task, limit=limit)
     print(format_prompt_pack(task, ranked))
+
+
+def _run_evaluate_working_set(repo_root: Path, *, cases: Path, limit: int) -> None:
+    results = evaluate_working_set(repo_root, cases, limit=limit)
+    print(format_working_set_eval(results))
 
 
 if __name__ == "__main__":

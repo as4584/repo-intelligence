@@ -40,6 +40,7 @@ uv run change-radar analyze-symbol . --symbol processPayment
 uv run change-radar build-working-set . --task "add retry logic to payment flow"
 uv run change-radar build-prompt-pack . --task "add retry logic to payment flow"
 uv run change-radar analyze-diff .
+uv run change-radar evaluate-working-set . --cases docs/eval_cases.example.json
 uv run pytest
 ```
 

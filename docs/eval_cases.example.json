@@ -1,0 +1,20 @@
+{
+  "cases": [
+    {
+      "name": "Payment retry flow",
+      "task": "add retry logic to payment API calls",
+      "expected_files": [
+        "src/services/payment_service.ts",
+        "src/routes/checkout.ts"
+      ]
+    },
+    {
+      "name": "Auth token validation",
+      "task": "what breaks if I change auth token validation",
+      "expected_files": [
+        "src/auth/token_validation.ts",
+        "src/routes/login.ts"
+      ]
+    }
+  ]
+}

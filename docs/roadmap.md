@@ -51,7 +51,7 @@ Answer "what files matter for this task?" well enough to dogfood.
 
 ### Build
 
-- Tree-sitter import extraction
+- structural extraction accuracy improvements
 - symbol extraction
 - import graph persistence
 - candidate generation and ranking
@@ -59,7 +59,7 @@ Answer "what files matter for this task?" well enough to dogfood.
 
 ### Learn
 
-- Tree-sitter query design
+- parser tradeoffs and when syntax-aware parsing is worth it
 - graph expansion heuristics
 - ranking explanation design
 
@@ -72,11 +72,13 @@ Given a task like "add retry logic to payment calls," the tool returns a believa
 - embeddings
 - deep symbol resolution
 - VS Code extension
+- Tree-sitter unless eval misses clearly justify it
 
 ### Risks
 
 - noisy ranking
 - weak evaluation discipline
+- spending too long on parser setup before it changes recall
 
 ### On-track check
 
@@ -153,6 +155,7 @@ The project is a serious portfolio piece and a practical local tool.
 ### Risks
 
 - polishing output before core utility is solid
+- adding infrastructure that is already good enough instead of improving evals
 
 ### On-track check
 

@@ -57,7 +57,7 @@ The strongest recurring insight from the research docs is that current AI tools 
 - local-first CLI
 - JS/TS repo support
 - `.gitignore`-aware repo scanning
-- Tree-sitter-based import and symbol extraction
+- deterministic import and symbol extraction with a swappable parser backend
 - SQLite index
 - deterministic ranking with explanations
 - three commands:
@@ -94,6 +94,7 @@ This keeps the product distinct from:
 - explanations with every result
 - one strong workflow before multiple weak ones
 - visible user value over invisible infrastructure
+- parser complexity only after eval misses justify it
 
 ## Success criteria
 

@@ -32,9 +32,14 @@ def format_symbol_insights(symbol_query: str, insights: list[SymbolInsight]) -> 
             f"- {item.symbol_name} ({item.symbol_kind}) in {item.relative_path}:{item.start_line}"
         )
         if item.dependents:
-            lines.append(f"  dependents: {', '.join(item.dependents)}")
+            lines.append(f"  direct dependents: {', '.join(item.dependents)}")
         else:
-            lines.append("  dependents: none")
+            lines.append("  direct dependents: none")
+
+        if item.transitive_dependents:
+            lines.append(f"  transitive dependents: {', '.join(item.transitive_dependents)}")
+        else:
+            lines.append("  transitive dependents: none")
 
         if item.dependencies:
             lines.append(f"  dependencies: {', '.join(item.dependencies)}")
@@ -62,9 +67,14 @@ def format_diff_insights(insights: list[DiffFileInsight]) -> str:
             lines.append("  changed symbols: none mapped")
 
         if item.dependents:
-            lines.append(f"  likely dependents: {', '.join(item.dependents)}")
+            lines.append(f"  direct dependents: {', '.join(item.dependents)}")
         else:
-            lines.append("  likely dependents: none")
+            lines.append("  direct dependents: none")
+
+        if item.transitive_dependents:
+            lines.append(f"  transitive dependents: {', '.join(item.transitive_dependents)}")
+        else:
+            lines.append("  transitive dependents: none")
 
         if item.dependencies:
             lines.append(f"  direct dependencies: {', '.join(item.dependencies)}")

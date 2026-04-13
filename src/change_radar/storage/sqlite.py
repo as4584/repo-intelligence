@@ -298,6 +298,19 @@ def load_file_import_neighbors(
     return dependents, dependencies
 
 
+def load_import_edges(connection: sqlite3.Connection, repo_root: str) -> list[tuple[str, str]]:
+    rows = connection.execute(
+        """
+        SELECT source_path, target_path
+        FROM edges
+        WHERE repo_root = ? AND edge_type = 'imports'
+        ORDER BY source_path, target_path
+        """,
+        (repo_root,),
+    ).fetchall()
+    return [(row["source_path"], row["target_path"]) for row in rows]
+
+
 def load_symbols_for_file(
     connection: sqlite3.Connection, repo_root: str, relative_path: str
 ) -> list[sqlite3.Row]:

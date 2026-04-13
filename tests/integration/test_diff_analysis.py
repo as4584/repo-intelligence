@@ -6,7 +6,7 @@ from pathlib import Path
 from change_radar.analysis.diff import analyze_diff
 
 
-def test_analyze_diff_maps_changed_lines_to_symbols_and_neighbors(tmp_path: Path) -> None:
+def test_analyze_diff_maps_changed_lines_to_symbols_and_bounded_impact(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
 
@@ -27,6 +27,7 @@ def test_analyze_diff_maps_changed_lines_to_symbols_and_neighbors(tmp_path: Path
     (repo / "src").mkdir()
     (repo / "src" / "services").mkdir()
     (repo / "src" / "routes").mkdir()
+    (repo / "src" / "controllers").mkdir()
 
     (repo / "src" / "services" / "payment_service.ts").write_text(
         "export function processPayment() {\n"
@@ -43,6 +44,18 @@ def test_analyze_diff_maps_changed_lines_to_symbols_and_neighbors(tmp_path: Path
         'import { processPayment } from "../services/payment_service";\n'
         "export function checkout() {\n"
         "  return processPayment();\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    (repo / "src" / "routes" / "checkout.test.ts").write_text(
+        'import { checkout } from "./checkout";\n'
+        "test('checkout', () => expect(checkout()).toBe(true));\n",
+        encoding="utf-8",
+    )
+    (repo / "src" / "controllers" / "checkout_controller.ts").write_text(
+        'import { checkout } from "../routes/checkout";\n'
+        "export function handleCheckout() {\n"
+        "  return checkout();\n"
         "}\n",
         encoding="utf-8",
     )
@@ -64,4 +77,8 @@ def test_analyze_diff_maps_changed_lines_to_symbols_and_neighbors(tmp_path: Path
     assert insights[0].relative_path == "src/services/payment_service.ts"
     assert insights[0].changed_symbols == ("processPayment",)
     assert insights[0].dependents == ("src/routes/checkout.ts",)
-    assert insights[0].suggested_tests == ("src/services/payment_service.test.ts",)
+    assert insights[0].transitive_dependents == ("src/controllers/checkout_controller.ts",)
+    assert insights[0].suggested_tests == (
+        "src/services/payment_service.test.ts",
+        "src/routes/checkout.test.ts",
+    )

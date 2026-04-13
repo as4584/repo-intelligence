@@ -27,10 +27,11 @@ The codebase is in the first implementation phase:
 - CLI commands for `scan`, `index`, `build-working-set`, `build-prompt-pack`, `analyze-symbol`, and `analyze-diff`
 - MCP server wrapper for editor and agent integration
 - repo/index status detection for stale index checks
+- bounded transitive impact analysis for symbol and diff preflight
 
 The current structural extractor uses conservative regex heuristics so the core workflows
 can progress without blocking on parser dependencies. Tree-sitter-backed parsing,
-diff blast-radius analysis, and MCP tools are planned next.
+deeper parser accuracy, richer benchmark coverage, and stronger test heuristics are planned next.
 
 ## Quick start
 

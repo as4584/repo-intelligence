@@ -60,21 +60,23 @@ def create_mcp_server() -> FastMCP:
 
     @server.tool(
         name="analyze_symbol",
-        description="Inspect an indexed symbol and direct file-level neighbors.",
+        description="Inspect an indexed symbol and bounded downstream import impact.",
         structured_output=False,
     )
-    def analyze_symbol_tool(repo: str, symbol: str, limit: int = 10) -> str:
-        results = analyze_symbol(Path(repo), symbol, limit=limit)
-        return _json_text({"symbol": symbol, "results": results})
+    def analyze_symbol_tool(
+        repo: str, symbol: str, limit: int = 10, depth: int = 2
+    ) -> str:
+        results = analyze_symbol(Path(repo), symbol, limit=limit, max_depth=depth)
+        return _json_text({"symbol": symbol, "depth": depth, "results": results})
 
     @server.tool(
         name="analyze_diff",
-        description="Analyze the current working tree diff and report likely impact.",
+        description="Analyze the current working tree diff and bounded downstream impact.",
         structured_output=False,
     )
-    def analyze_diff_tool(repo: str) -> str:
-        results = analyze_diff(Path(repo))
-        return _json_text({"results": results})
+    def analyze_diff_tool(repo: str, depth: int = 2) -> str:
+        results = analyze_diff(Path(repo), max_depth=depth)
+        return _json_text({"depth": depth, "results": results})
 
     @server.tool(
         name="evaluate_working_set",

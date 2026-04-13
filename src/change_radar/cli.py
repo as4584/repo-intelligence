@@ -70,6 +70,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum number of symbol matches to return",
     )
     analyze_symbol_parser.add_argument(
+        "--depth",
+        type=int,
+        default=2,
+        help="Reverse-import traversal depth for downstream impact",
+    )
+    analyze_symbol_parser.add_argument(
         "--json",
         action="store_true",
         help="Print symbol analysis as JSON",
@@ -80,6 +86,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Analyze the current working tree diff against the local index",
     )
     analyze_diff_parser.add_argument("repo", help="Path to the repository root")
+    analyze_diff_parser.add_argument(
+        "--depth",
+        type=int,
+        default=2,
+        help="Reverse-import traversal depth for downstream impact",
+    )
     analyze_diff_parser.add_argument(
         "--json",
         action="store_true",
@@ -165,12 +177,16 @@ def main() -> None:
 
     if args.command == "analyze-symbol":
         _run_analyze_symbol(
-            Path(args.repo), symbol=args.symbol, limit=args.limit, as_json=args.json
+            Path(args.repo),
+            symbol=args.symbol,
+            limit=args.limit,
+            depth=args.depth,
+            as_json=args.json,
         )
         return
 
     if args.command == "analyze-diff":
-        _run_analyze_diff(Path(args.repo), as_json=args.json)
+        _run_analyze_diff(Path(args.repo), depth=args.depth, as_json=args.json)
         return
 
     if args.command == "build-working-set":
@@ -250,12 +266,15 @@ def _run_build_working_set(repo_root: Path, *, task: str, limit: int, as_json: b
     print(format_working_set(task, ranked))
 
 
-def _run_analyze_symbol(repo_root: Path, *, symbol: str, limit: int, as_json: bool) -> None:
-    insights = analyze_symbol(repo_root, symbol, limit=limit)
+def _run_analyze_symbol(
+    repo_root: Path, *, symbol: str, limit: int, depth: int, as_json: bool
+) -> None:
+    insights = analyze_symbol(repo_root, symbol, limit=limit, max_depth=depth)
     if as_json:
         _print_json(
             {
                 "symbol": symbol,
+                "depth": depth,
                 "results": insights,
             }
         )
@@ -263,10 +282,10 @@ def _run_analyze_symbol(repo_root: Path, *, symbol: str, limit: int, as_json: bo
     print(format_symbol_insights(symbol, insights))
 
 
-def _run_analyze_diff(repo_root: Path, *, as_json: bool) -> None:
-    insights = analyze_diff(repo_root)
+def _run_analyze_diff(repo_root: Path, *, depth: int, as_json: bool) -> None:
+    insights = analyze_diff(repo_root, max_depth=depth)
     if as_json:
-        _print_json({"results": insights})
+        _print_json({"depth": depth, "results": insights})
         return
     print(format_diff_insights(insights))
 

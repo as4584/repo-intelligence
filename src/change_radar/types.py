@@ -57,6 +57,7 @@ class SymbolInsight:
     start_line: int
     dependents: tuple[str, ...]
     dependencies: tuple[str, ...]
+    transitive_dependents: tuple[str, ...] = ()
 
 
 @dataclass(slots=True, frozen=True)
@@ -73,6 +74,7 @@ class DiffFileInsight:
     dependents: tuple[str, ...]
     dependencies: tuple[str, ...]
     suggested_tests: tuple[str, ...]
+    transitive_dependents: tuple[str, ...] = ()
 
 
 @dataclass(slots=True, frozen=True)

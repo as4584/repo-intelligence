@@ -57,6 +57,7 @@ uv run pytest
 ## MCP usage
 
 An example MCP config is available at [examples/mcp.json.example](/root/studio/testing/repo-intelligence/examples/mcp.json.example).
+The recommended agent workflow is documented in [mcp.md](/root/studio/testing/repo-intelligence/docs/mcp.md).
 
 ## Source of truth
 
@@ -65,4 +66,5 @@ Use these docs before making architectural changes:
 - `docs/product.md`
 - `docs/roadmap.md`
 - `docs/evals.md`
+- `docs/mcp.md`
 - `docs/adr/`

@@ -8,6 +8,8 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
 from change_radar.analysis.diff import analyze_diff
+from change_radar.analysis.preflight import build_index_warnings
+from change_radar.analysis.status import get_repo_status
 from change_radar.analysis.symbol import analyze_symbol
 from change_radar.evals.working_set import evaluate_working_set
 from change_radar.index.service import index_repository
@@ -41,13 +43,33 @@ def create_mcp_server() -> FastMCP:
         return _json_text({"summary": summary})
 
     @server.tool(
+        name="repo_status",
+        description="Check whether the local index exists and whether it looks stale.",
+        structured_output=False,
+    )
+    def repo_status_tool(repo: str) -> str:
+        status = get_repo_status(Path(repo))
+        return _json_text({"repo_status": status})
+
+    @server.tool(
         name="build_working_set",
         description="Rank the most relevant files for a coding task.",
         structured_output=False,
     )
     def build_working_set_tool(repo: str, task: str, limit: int = 10) -> str:
+        status = get_repo_status(Path(repo))
+        warnings = build_index_warnings(
+            status, command_name="build-working-set", requires_index=False
+        )
         results = build_working_set(Path(repo), task, limit=limit)
-        return _json_text({"task": task, "results": results})
+        return _json_text(
+            {
+                "task": task,
+                "repo_status": status,
+                "warnings": warnings,
+                "results": results,
+            }
+        )
 
     @server.tool(
         name="build_prompt_pack",
@@ -55,8 +77,16 @@ def create_mcp_server() -> FastMCP:
         structured_output=False,
     )
     def build_prompt_pack_tool(repo: str, task: str, limit: int = 8) -> str:
+        status = get_repo_status(Path(repo))
+        warnings = build_index_warnings(
+            status, command_name="build-prompt-pack", requires_index=False
+        )
         ranked = build_working_set(Path(repo), task, limit=limit)
-        return format_prompt_pack(task, ranked)
+        prompt = format_prompt_pack(task, ranked)
+        if not warnings:
+            return prompt
+        warning_lines = ["Warnings:", *[f"- {warning}" for warning in warnings], ""]
+        return "\n".join(warning_lines) + prompt
 
     @server.tool(
         name="analyze_symbol",
@@ -66,8 +96,18 @@ def create_mcp_server() -> FastMCP:
     def analyze_symbol_tool(
         repo: str, symbol: str, limit: int = 10, depth: int = 2
     ) -> str:
+        status = get_repo_status(Path(repo))
+        warnings = build_index_warnings(status, command_name="analyze-symbol", requires_index=True)
         results = analyze_symbol(Path(repo), symbol, limit=limit, max_depth=depth)
-        return _json_text({"symbol": symbol, "depth": depth, "results": results})
+        return _json_text(
+            {
+                "symbol": symbol,
+                "depth": depth,
+                "repo_status": status,
+                "warnings": warnings,
+                "results": results,
+            }
+        )
 
     @server.tool(
         name="analyze_diff",

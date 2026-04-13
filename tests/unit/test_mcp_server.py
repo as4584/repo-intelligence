@@ -15,6 +15,7 @@ def test_mcp_server_lists_expected_tools() -> None:
 
     assert tool_names == [
         "index_repository",
+        "repo_status",
         "build_working_set",
         "build_prompt_pack",
         "analyze_symbol",
@@ -64,4 +65,6 @@ def test_mcp_server_build_working_set_tool_returns_structured_data(tmp_path: Pat
     payload = json.loads(text)
 
     assert payload["task"] == "payment"
+    assert len(payload["warnings"]) == 1
+    assert payload["repo_status"]["has_index"] is False
     assert payload["results"][0]["relative_path"] == "src/services/payment_service.ts"

@@ -28,6 +28,7 @@ The codebase is in the first implementation phase:
 - MCP server wrapper for editor and agent integration
 - repo/index status detection for stale index checks
 - bounded transitive impact analysis for symbol and diff preflight
+- CLI and MCP warnings when index-backed commands are missing fresh repo state
 
 The current structural extractor uses conservative regex heuristics so the core workflows
 can progress without blocking on parser dependencies. Tree-sitter-backed parsing,

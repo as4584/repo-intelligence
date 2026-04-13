@@ -63,6 +63,8 @@ def test_build_working_set_json_output_is_machine_readable(tmp_path: Path) -> No
 
     payload = json.loads(result.stdout)
     assert payload["task"] == "payment"
+    assert payload["warnings"] == []
+    assert payload["repo_status"]["has_index"] is True
     assert payload["results"][0]["relative_path"] == "src/services/payment_service.ts"
 
 
@@ -111,5 +113,58 @@ def test_analyze_diff_json_output_is_machine_readable(tmp_path: Path) -> None:
     )
 
     payload = json.loads(result.stdout)
+    assert payload["depth"] == 2
     assert payload["results"][0]["relative_path"] == "src/services/payment_service.ts"
     assert payload["results"][0]["changed_symbols"] == ["processPayment"]
+
+
+def test_analyze_symbol_json_output_warns_when_index_is_missing(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+
+    (repo / "src").mkdir()
+    (repo / "src" / "services").mkdir()
+    (repo / "src" / "services" / "payment_service.ts").write_text(
+        "export function processPayment() {\n  return true;\n}\n",
+        encoding="utf-8",
+    )
+
+    env = dict(os.environ)
+    env["PYTHONPATH"] = "/root/studio/testing/repo-intelligence/src"
+
+    result = subprocess.run(
+        [
+            "python3",
+            "-m",
+            "change_radar.cli",
+            "analyze-symbol",
+            ".",
+            "--symbol",
+            "processPayment",
+            "--json",
+        ],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["repo_status"]["has_index"] is False
+    assert len(payload["warnings"]) == 1
+    assert payload["results"] == []

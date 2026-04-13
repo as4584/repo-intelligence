@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from change_radar.analysis.diff import analyze_diff
+from change_radar.analysis.preflight import build_index_warnings
 from change_radar.analysis.status import get_repo_status
 from change_radar.analysis.symbol import analyze_symbol
 from change_radar.evals.working_set import evaluate_working_set
@@ -254,31 +255,43 @@ def _run_repo_status(repo_root: Path, *, as_json: bool) -> None:
 
 
 def _run_build_working_set(repo_root: Path, *, task: str, limit: int, as_json: bool) -> None:
+    status = get_repo_status(repo_root)
+    warnings = build_index_warnings(
+        status, command_name="build-working-set", requires_index=False
+    )
     ranked = build_working_set(repo_root, task, limit=limit)
     if as_json:
         _print_json(
             {
                 "task": task,
+                "repo_status": status,
+                "warnings": warnings,
                 "results": ranked,
             }
         )
         return
+    _print_warnings(warnings)
     print(format_working_set(task, ranked))
 
 
 def _run_analyze_symbol(
     repo_root: Path, *, symbol: str, limit: int, depth: int, as_json: bool
 ) -> None:
+    status = get_repo_status(repo_root)
+    warnings = build_index_warnings(status, command_name="analyze-symbol", requires_index=True)
     insights = analyze_symbol(repo_root, symbol, limit=limit, max_depth=depth)
     if as_json:
         _print_json(
             {
                 "symbol": symbol,
                 "depth": depth,
+                "repo_status": status,
+                "warnings": warnings,
                 "results": insights,
             }
         )
         return
+    _print_warnings(warnings)
     print(format_symbol_insights(symbol, insights))
 
 
@@ -291,7 +304,10 @@ def _run_analyze_diff(repo_root: Path, *, depth: int, as_json: bool) -> None:
 
 
 def _run_build_prompt_pack(repo_root: Path, *, task: str, limit: int) -> None:
+    status = get_repo_status(repo_root)
+    warnings = build_index_warnings(status, command_name="build-prompt-pack", requires_index=False)
     ranked = build_working_set(repo_root, task, limit=limit)
+    _print_warnings(warnings)
     print(format_prompt_pack(task, ranked))
 
 
@@ -307,6 +323,15 @@ def _run_evaluate_working_set(
 
 def _print_json(payload: object) -> None:
     print(json.dumps(to_jsonable(payload), indent=2))
+
+
+def _print_warnings(warnings: list[str]) -> None:
+    if not warnings:
+        return
+    print("Warnings:")
+    for warning in warnings:
+        print(f"- {warning}")
+    print()
 
 
 if __name__ == "__main__":
